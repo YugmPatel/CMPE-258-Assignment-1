@@ -42,7 +42,3 @@ This assignment involves utilizing various AI and development tools to generate 
 - Ensure all materials (code, notebooks, videos, and documentation) are properly organized in GitHub.
 - Include necessary explanations and comments in the code.
 - Provide working links to YouTube walkthroughs.
-
----
-This README serves as a guideline for completing and organizing the assignment effectively.
-
