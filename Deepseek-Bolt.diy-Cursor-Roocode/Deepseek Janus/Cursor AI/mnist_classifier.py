@@ -1,0 +1,96 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.datasets import mnist
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Load and preprocess the MNIST dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# Normalize pixel values to [0, 1]
+x_train = x_train.astype("float32") / 255
+x_test = x_test.astype("float32") / 255
+
+# Reshape data to include channel dimension
+x_train = np.expand_dims(x_train, -1)
+x_test = np.expand_dims(x_test, -1)
+
+# Convert class vectors to binary class matrices
+num_classes = 10
+y_train = keras.utils.to_categorical(y_train, num_classes)
+y_test = keras.utils.to_categorical(y_test, num_classes)
+
+# Model architecture
+model = keras.Sequential([
+    layers.Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(28, 28, 1)),
+    layers.MaxPooling2D(pool_size=(2, 2)),
+    layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+    layers.MaxPooling2D(pool_size=(2, 2)),
+    layers.Flatten(),
+    layers.Dropout(0.5),
+    layers.Dense(num_classes, activation="softmax")
+])
+
+# Compile the model
+model.compile(
+    loss="categorical_crossentropy",
+    optimizer="adam",
+    metrics=["accuracy"]
+)
+
+# Train the model
+batch_size = 128
+epochs = 15
+
+history = model.fit(
+    x_train, y_train,
+    batch_size=batch_size,
+    epochs=epochs,
+    validation_split=0.1
+)
+
+# Evaluate the model
+score = model.evaluate(x_test, y_test, verbose=0)
+print(f"Test loss: {score[0]:.4f}")
+print(f"Test accuracy: {score[1]:.4f}")
+
+# Generate predictions
+y_pred = model.predict(x_test)
+y_pred_classes = np.argmax(y_pred, axis=1)
+y_true = np.argmax(y_test, axis=1)
+
+# Confusion matrix
+plt.figure(figsize=(10, 8))
+cm = confusion_matrix(y_true, y_pred_classes)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title('Confusion Matrix')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+
+# Classification report
+print("\nClassification Report:")
+print(classification_report(y_true, y_pred_classes))
+
+# Plot training history
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show() 
